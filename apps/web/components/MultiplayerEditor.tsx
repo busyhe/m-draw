@@ -7,6 +7,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { Users } from 'lucide-react'
 
 const WORKER_URL = process.env.NEXT_PUBLIC_WORKER_URL || 'http://localhost:8787'
+const TLDRAW_LICENSE_KEY = process.env.NEXT_PUBLIC_TLDRAW_LICENSE_KEY
 
 function SyncedEditor({ roomId }: { roomId: string }) {
   const syncConfig = useMemo(
@@ -30,7 +31,7 @@ function SyncedEditor({ roomId }: { roomId: string }) {
 
   const syncStore = useSync(syncConfig)
 
-  return <Tldraw store={syncStore} />
+  return <Tldraw store={syncStore} licenseKey={TLDRAW_LICENSE_KEY} />
 }
 
 export function MultiplayerEditor({ roomId }: { roomId: string }) {
