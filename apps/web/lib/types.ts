@@ -10,3 +10,8 @@ export interface RoomUsersResponse {
 export interface RoomUsersErrorResponse {
   error: string
 }
+
+export interface HeartbeatResponse {
+  success: boolean
+  total: number
+}

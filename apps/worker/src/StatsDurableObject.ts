@@ -2,11 +2,14 @@ export interface StatsEnv {
   STATS_DURABLE_OBJECT: DurableObjectNamespace
 }
 
-// Storage keys
+// Storage keys for room stats (persisted)
 const STORAGE_KEYS = {
   TOTAL_USERS: 'totalUsers',
   ROOM_USERS: 'roomUsers'
 } as const
+
+// Visitor heartbeat timeout (30 seconds)
+const VISITOR_TIMEOUT_MS = 30000
 
 // JSON response helper without CORS headers (handled by main router)
 const jsonResponse = (data: object, status = 200) =>
@@ -16,9 +19,13 @@ const jsonResponse = (data: object, status = 200) =>
   })
 
 export class StatsDurableObject implements DurableObject {
+  // Room stats (persisted) - users currently in rooms
   private totalUsers: number = 0
   private roomUsers: Map<string, number> = new Map()
   private initialized: boolean = false
+
+  // Visitor stats (in-memory) - all website visitors with heartbeat
+  private visitors: Map<string, number> = new Map()
 
   constructor(
     private readonly state: DurableObjectState,
@@ -50,14 +57,31 @@ export class StatsDurableObject implements DurableObject {
     })
   }
 
+  // Get active visitor count (exclude expired heartbeats)
+  private getActiveVisitorCount(): number {
+    const now = Date.now()
+    let count = 0
+    for (const [visitorId, lastHeartbeat] of this.visitors) {
+      if (now - lastHeartbeat < VISITOR_TIMEOUT_MS) {
+        count++
+      } else {
+        // Cleanup expired visitor
+        this.visitors.delete(visitorId)
+      }
+    }
+    return count
+  }
+
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url)
 
     if (request.method === 'GET') {
+      // Get total online visitors (heartbeat-based)
       if (url.pathname === '/stats/total') {
-        return jsonResponse({ total: this.totalUsers })
+        return jsonResponse({ total: this.getActiveVisitorCount() })
       }
 
+      // Get users in a specific room
       if (url.pathname === '/stats/room') {
         const roomId = url.searchParams.get('roomId')
         if (!roomId) {
@@ -70,8 +94,19 @@ export class StatsDurableObject implements DurableObject {
 
     if (request.method === 'POST') {
       const action = url.searchParams.get('action')
-      const roomId = url.searchParams.get('roomId')
 
+      // Handle visitor heartbeat
+      if (action === 'heartbeat') {
+        const visitorId = url.searchParams.get('visitorId')
+        if (!visitorId) {
+          return jsonResponse({ error: 'Missing visitorId' }, 400)
+        }
+        this.visitors.set(visitorId, Date.now())
+        return jsonResponse({ success: true, total: this.getActiveVisitorCount() })
+      }
+
+      // Handle room connect/disconnect (original logic)
+      const roomId = url.searchParams.get('roomId')
       if (action === 'connect') {
         this.totalUsers++
         if (roomId) {

@@ -1,38 +1,71 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { WORKER_URL } from '@/lib/constants'
-import type { TotalUsersResponse, RoomUsersResponse } from '@/lib/types'
+import type { HeartbeatResponse, RoomUsersResponse } from '@/lib/types'
 
 interface UsePollingOptions {
   interval?: number
   enabled?: boolean
 }
 
+// Storage key for visitor ID
+const VISITOR_ID_KEY = 'm-draw-visitor-id'
+
+// Get or create visitor ID
+function getVisitorId(): string {
+  if (typeof window === 'undefined') return ''
+
+  let visitorId = localStorage.getItem(VISITOR_ID_KEY)
+  if (!visitorId) {
+    visitorId = crypto.randomUUID()
+    localStorage.setItem(VISITOR_ID_KEY, visitorId)
+  }
+  return visitorId
+}
+
 /**
- * Hook for fetching total online users count
+ * Hook for tracking online visitors using heartbeat mechanism
  */
 export function useTotalUsers(options: UsePollingOptions = {}) {
-  const { interval = 3000, enabled = true } = options
+  const { interval = 10000, enabled = true } = options
   const [totalUsers, setTotalUsers] = useState<number | null>(null)
+  const visitorIdRef = useRef<string>('')
 
-  const fetchTotalUsers = useCallback(async () => {
+  // Initialize visitor ID on client side
+  useEffect(() => {
+    visitorIdRef.current = getVisitorId()
+  }, [])
+
+  const sendHeartbeat = useCallback(async () => {
+    if (!visitorIdRef.current) return
+
     try {
-      const response = await fetch(`${WORKER_URL}/stats/total`)
-      const data: TotalUsersResponse = await response.json()
+      const response = await fetch(
+        `${WORKER_URL}/stats/heartbeat?action=heartbeat&visitorId=${encodeURIComponent(visitorIdRef.current)}`,
+        { method: 'POST' }
+      )
+      const data: HeartbeatResponse = await response.json()
       setTotalUsers(data.total)
     } catch (error) {
-      console.error('Failed to fetch total users:', error)
+      console.error('Failed to send heartbeat:', error)
     }
   }, [])
 
   useEffect(() => {
     if (!enabled) return
 
-    fetchTotalUsers()
-    const timer = setInterval(fetchTotalUsers, interval)
-    return () => clearInterval(timer)
-  }, [enabled, interval, fetchTotalUsers])
+    // Send initial heartbeat after visitor ID is ready
+    const initialTimeout = setTimeout(sendHeartbeat, 100)
+
+    // Send periodic heartbeats
+    const timer = setInterval(sendHeartbeat, interval)
+
+    return () => {
+      clearTimeout(initialTimeout)
+      clearInterval(timer)
+    }
+  }, [enabled, interval, sendHeartbeat])
 
   return totalUsers
 }

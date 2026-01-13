@@ -84,6 +84,12 @@ router.get('/stats/room', async (request, env) => {
   return await obj.fetch(new Request(request.url, { method: 'GET' }))
 })
 
+router.post('/stats/heartbeat', async (request, env) => {
+  const id = env.STATS_DURABLE_OBJECT.idFromName('global')
+  const obj = env.STATS_DURABLE_OBJECT.get(id)
+  return await obj.fetch(new Request(request.url, { method: 'POST' }))
+})
+
 export default {
   fetch: async (request: Request, env: Env, ctx: ExecutionContext) => {
     try {

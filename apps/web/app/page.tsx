@@ -28,8 +28,8 @@ export default function HomePage() {
     <div data-wrapper="" className="border-grid flex flex-1 flex-col min-h-svh">
       <SiteHeader />
       <main className="flex flex-1 flex-col container-wrapper">
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-gray-900 p-4">
-          <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 space-y-8">
+        <div className="flex flex-col items-center justify-center min-h-screen p-4">
+          <div className="w-full max-w-md bg-secondary rounded-xl shadow-lg p-8 space-y-8">
             <div className="text-center">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">tldraw Collaborative</h1>
               <p className="text-gray-500">Create a new whiteboard or join an existing session.</p>
