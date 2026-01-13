@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { siteConfig } from '@/config/site'
 import { MainNav } from '@/components/header/main-nav'
 import { ModeSwitcher } from '@/components/header/mode-switcher'
+import { LanguageSwitcher } from '@/components/header/language-switcher'
 import { Button } from '@workspace/ui/components/button'
 import { Github } from 'lucide-react'
 
@@ -20,7 +21,7 @@ export function SiteHeader() {
                   <span className="sr-only">GitHub</span>
                 </Link>
               </Button>
-              {/* 添加中英文切换 */}
+              <LanguageSwitcher />
               <ModeSwitcher />
             </nav>
           </div>

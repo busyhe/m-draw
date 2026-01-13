@@ -3,12 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowUpRight, Star, Users } from 'lucide-react'
-import { useTotalUsers } from '@/hooks'
+import { useTotalUsers, useLanguage } from '@/hooks'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
-
-// Feature tags data
-const FEATURE_TAGS = ['FAST', 'CUSTOMIZABLE', 'POWERFUL', 'FLEXIBLE', 'INTUITIVE']
 
 // Decorative curves SVG component
 function DecorativeCurves() {
@@ -73,6 +70,10 @@ export default function HomePage() {
   const router = useRouter()
   const [roomId, setRoomId] = useState('')
   const totalUsers = useTotalUsers()
+  const { t } = useLanguage()
+
+  // Feature tags using translations
+  const featureTags = [t('fast'), t('customizable'), t('powerful'), t('flexible'), t('intuitive')]
 
   const createRoom = () => {
     const id = crypto.randomUUID()
@@ -98,13 +99,11 @@ export default function HomePage() {
                 {/* Left: Title and description */}
                 <div className="flex-1">
                   <h1 className="text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black leading-none tracking-tight text-foreground">
-                    IMAGINE
+                    {t('heroTitle1')}
                     <br />
-                    FREELY
+                    {t('heroTitle2')}
                   </h1>
-                  <p className="mt-6 text-base md:text-lg text-muted-foreground max-w-sm">
-                    Enjoy a user-friendly experience that makes drawing easy and enjoyable.
-                  </p>
+                  <p className="mt-6 text-base md:text-lg text-muted-foreground max-w-sm">{t('heroDescription')}</p>
                 </div>
 
                 {/* Right: User stats */}
@@ -117,10 +116,9 @@ export default function HomePage() {
                   <div className="text-sm">
                     <span className="font-semibold">
                       +{totalUsers !== null ? totalUsers.toLocaleString() : '200,000'}
-                    </span>{' '}
-                    artists
+                    </span>
                     <br />
-                    recommend our app
+                    {t('artistsRecommend')}
                   </div>
                 </div>
               </div>
@@ -137,7 +135,7 @@ export default function HomePage() {
               <div className="space-y-6">
                 {/* Feature Tags */}
                 <div className="flex flex-wrap gap-2">
-                  {FEATURE_TAGS.map((tag) => (
+                  {featureTags.map((tag) => (
                     <span
                       key={tag}
                       className="px-4 py-2 text-xs font-medium border border-foreground/30 rounded-full text-foreground"
@@ -152,10 +150,8 @@ export default function HomePage() {
                   onClick={createRoom}
                   className="group relative bg-landing-accent rounded-2xl p-6 cursor-pointer hover:opacity-90 transition-opacity max-w-xs"
                 >
-                  <h3 className="text-lg font-bold text-landing-accent-foreground mb-1">TRY IT FOR FREE</h3>
-                  <p className="text-sm text-landing-accent-foreground/80">
-                    Explore endless brushes, colors, textures to bring your art to life.
-                  </p>
+                  <h3 className="text-lg font-bold text-landing-accent-foreground mb-1">{t('tryForFree')}</h3>
+                  <p className="text-sm text-landing-accent-foreground/80">{t('ctaDescription')}</p>
                   <div className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
                     <ArrowUpRight size={20} className="text-landing-accent" />
                   </div>
@@ -172,7 +168,7 @@ export default function HomePage() {
                 {/* Rating badge */}
                 <div className="absolute -bottom-4 -right-4 bg-white rounded-xl shadow-lg p-3 flex flex-col items-center gap-1">
                   <StarRating rating={4.9} />
-                  <span className="text-xs font-bold text-foreground">4.9/5 AVERAGE RATING</span>
+                  <span className="text-xs font-bold text-foreground">4.9/5 {t('averageRating')}</span>
                 </div>
               </div>
             </section>
@@ -180,7 +176,7 @@ export default function HomePage() {
             {/* Join Room Section */}
             <section className="mt-12 pt-8 border-t border-foreground/10">
               <div className="max-w-md mx-auto">
-                <h2 className="text-xl font-bold text-center mb-4">Join Existing Room</h2>
+                <h2 className="text-xl font-bold text-center mb-4">{t('joinExistingRoom')}</h2>
                 <form onSubmit={joinRoom} className="flex gap-2">
                   <div className="relative flex-1">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
@@ -191,7 +187,7 @@ export default function HomePage() {
                       id="roomId"
                       value={roomId}
                       onChange={(e) => setRoomId(e.target.value)}
-                      placeholder="Enter Room ID"
+                      placeholder={t('enterRoomId')}
                       className="block w-full pl-10 pr-3 py-3 border border-foreground/20 rounded-lg bg-white/80 placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-landing-accent focus:border-transparent text-sm"
                     />
                   </div>
@@ -200,7 +196,7 @@ export default function HomePage() {
                     disabled={!roomId.trim()}
                     className="px-6 py-3 bg-foreground text-background font-semibold rounded-lg transition-opacity hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Join
+                    {t('join')}
                   </button>
                 </form>
               </div>
