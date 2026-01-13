@@ -2,7 +2,18 @@ import { AutoRouter, cors, IRequest } from 'itty-router'
 import { Env, TldrawDurableObject } from './TldrawDurableObject.js'
 import { StatsDurableObject, StatsEnv } from './StatsDurableObject.js'
 
-const { preflight, corsify } = cors()
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+  'https://m-draw-web.vercel.app',
+  'http://draw.busyhe.com' // for local development
+]
+
+const { preflight, corsify } = cors({
+  origin: (origin: string) => (ALLOWED_ORIGINS.includes(origin) ? origin : ''),
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  headers: ['Content-Type', 'Authorization'],
+  credentials: true
+})
 const router = AutoRouter<IRequest, [Env & StatsEnv, ExecutionContext]>()
 
 router.all('*', preflight)
@@ -33,9 +44,13 @@ router.get('/assets/:id', async (request, env) => {
   const object = await env.R2_BUCKET.get(`assets/${request.params.id}`)
   if (!object) return new Response('Object Not Found', { status: 404 })
 
+  const origin = request.headers.get('Origin') || ''
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ''
+
   const headers = new Headers()
   object.writeHttpMetadata(headers)
-  headers.set('Access-Control-Allow-Origin', '*')
+  headers.set('Access-Control-Allow-Origin', allowedOrigin)
+  headers.set('Access-Control-Allow-Credentials', 'true')
   headers.set('etag', object.httpEtag)
 
   return new Response(object.body, { headers })
