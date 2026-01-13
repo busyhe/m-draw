@@ -10,32 +10,20 @@ import { SiteFooter } from '@/components/site-footer'
 // Decorative curves SVG component
 function DecorativeCurves() {
   return (
-    <svg className="w-full h-48 md:h-64" viewBox="0 0 800 200" fill="none" preserveAspectRatio="xMidYMid meet">
-      {/* Dark curve */}
+    <svg className="w-full h-48 md:h-64" viewBox="0 0 1000 200" fill="none" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="curveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" className="[stop-color:var(--foreground)]" stopOpacity="0.9" />
+          <stop offset="50%" className="[stop-color:var(--foreground)]" stopOpacity="0.5" />
+          <stop offset="100%" className="[stop-color:var(--foreground)]" stopOpacity="0.15" />
+        </linearGradient>
+      </defs>
       <path
-        d="M50 150 Q150 50, 250 120 T450 80"
-        stroke="currentColor"
+        d="M0 120 Q60 180, 120 140 Q200 80, 280 120 Q380 180, 480 100 Q580 20, 680 80 Q780 140, 880 60 Q940 20, 1000 40"
+        stroke="url(#curveGradient)"
         strokeWidth="3"
         strokeLinecap="round"
-        className="text-foreground"
-        fill="none"
-      />
-      {/* Medium gray curve */}
-      <path
-        d="M200 180 Q350 20, 500 100 T700 60"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-        className="text-foreground/40"
-        fill="none"
-      />
-      {/* Light gray curve */}
-      <path
-        d="M400 160 Q550 40, 650 120 T800 80"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-        className="text-foreground/20"
+        strokeLinejoin="round"
         fill="none"
       />
     </svg>
@@ -99,9 +87,7 @@ export default function HomePage() {
                 {/* Left: Title and description */}
                 <div className="flex-1">
                   <h1 className="text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black leading-none tracking-tight text-foreground">
-                    {t('heroTitle1')}
-                    <br />
-                    {t('heroTitle2')}
+                    IMAGINE FREELY
                   </h1>
                   <p className="mt-6 text-base md:text-lg text-muted-foreground max-w-sm">{t('heroDescription')}</p>
                 </div>
