@@ -12,20 +12,26 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@workspace/ui": "workspace:*",
     "@next/third-parties": "catalog:",
+    "@tldraw/sync": "^4.2.3",
+    "@tldraw/sync-core": "^4.2.3",
+    "@workspace/ui": "workspace:*",
     "lucide-react": "catalog:",
     "next": "catalog:",
     "next-themes": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "tldraw": "^4.2.3"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@workspace/eslint-config": "workspace:^",
     "@workspace/typescript-config": "workspace:*",
+    "autoprefixer": "^10.4.23",
+    "postcss": "^8.5.6",
     "typescript": "catalog:"
   }
 }

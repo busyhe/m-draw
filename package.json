@@ -1,7 +1,7 @@
 {
   "name": "nextjs-starter",
   "private": true,
-  "version": "0.4.0",
+  "version": "0.0.0",
   "scripts": {
     "build": "turbo build",
     "changeset": "pnpm exec changeset",
@@ -32,7 +32,12 @@
       "@tailwindcss/oxide",
       "core-js-pure",
       "lefthook",
-      "sharp"
+      "sharp",
+      "workerd"
+    ],
+    "ignoredBuiltDependencies": [
+      "core-js",
+      "esbuild"
     ]
   }
 }
