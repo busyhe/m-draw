@@ -2,7 +2,7 @@ import { siteConfig } from '@/config/site'
 
 export function SiteFooter() {
   return (
-    <footer className="border-grid border-t">
+    <footer className="border-grid border-t bg-landing-bg/60">
       <div className="container-wrapper">
         <div className="container py-4">
           <div className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left flex justify-between">
