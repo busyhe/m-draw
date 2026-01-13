@@ -28,6 +28,7 @@ out/
 build
 dist
 .wrangler
+.open-next
 
 # Debug
 npm-debug.log*

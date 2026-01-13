@@ -1,6 +1,6 @@
 'use client'
 
-import { Tldraw } from 'tldraw'
+import { Tldraw, TLAsset } from 'tldraw'
 import { useSync } from '@tldraw/sync'
 import 'tldraw/tldraw.css'
 import { useEffect, useState, useMemo } from 'react'
@@ -22,7 +22,7 @@ function SyncedEditor({ roomId }: { roomId: string }) {
           })
           return { src: `${WORKER_URL}/assets/${id}` }
         },
-        resolve: (asset: { props: { src: string } }) => asset.props.src
+        resolve: (asset: TLAsset) => ('src' in asset.props ? asset.props.src : null) ?? ''
       }
     }),
     [roomId]

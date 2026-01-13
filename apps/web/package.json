@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "deploy": "vercel --prod"
   },
   "dependencies": {
     "@next/third-parties": "catalog:",
@@ -32,6 +33,7 @@
     "@workspace/typescript-config": "workspace:*",
     "autoprefixer": "^10.4.23",
     "postcss": "^8.5.6",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vercel": "^41.4.0"
   }
 }

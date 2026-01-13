@@ -12,7 +12,11 @@ class_name = "StatsDurableObject"
 
 [[migrations]]
 tag = "v1"
-new_sqlite_classes = [ "TldrawDurableObject", "StatsDurableObject" ]
+new_sqlite_classes = [ "TldrawDurableObject" ]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = [ "StatsDurableObject" ]
 
 [[r2_buckets]]
 binding = "R2_BUCKET"
