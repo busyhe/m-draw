@@ -4,7 +4,7 @@ import { Tldraw, TLAsset } from 'tldraw'
 import { useSync } from '@tldraw/sync'
 import 'tldraw/tldraw.css'
 import { useEffect, useState, useMemo } from 'react'
-import { Users } from 'lucide-react'
+import { Users, Copy, Check } from 'lucide-react'
 import { WORKER_URL, TLDRAW_LICENSE_KEY } from '@/lib/constants'
 import { useRoomUsers } from '@/hooks'
 
@@ -35,11 +35,18 @@ function SyncedEditor({ roomId }: { roomId: string }) {
 
 export function MultiplayerEditor({ roomId }: { roomId: string }) {
   const [isMounted, setIsMounted] = useState(false)
+  const [isCopied, setIsCopied] = useState(false)
   const roomUsers = useRoomUsers(roomId, { enabled: isMounted })
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(roomId)
+    setIsCopied(true)
+    setTimeout(() => setIsCopied(false), 2000)
+  }
 
   if (!isMounted) {
     return <div style={{ position: 'fixed', inset: 0 }} />
@@ -48,9 +55,24 @@ export function MultiplayerEditor({ roomId }: { roomId: string }) {
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
       {roomUsers !== null && (
-        <div className="absolute top-1 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md border border-gray-200">
-          <Users size={16} className="text-gray-600" />
-          <span className="text-sm font-medium text-gray-700">{roomUsers}</span>
+        <div className="absolute top-2 right-2 md:right-auto md:left-1/2 md:-translate-x-1/2 z-[1000] flex items-center gap-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-sm border border-gray-200/50 hover:shadow-md transition-all">
+          <div className="flex items-center gap-2">
+            <Users size={14} className="text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">{roomUsers}</span>
+          </div>
+          <div className="w-px h-3 bg-gray-200" />
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-2 hover:bg-gray-100 p-1.5 -my-1 rounded-md transition-colors group cursor-pointer"
+            title="Copy Room ID"
+          >
+            <span className="text-xs text-gray-400 font-mono max-w-[100px] truncate">ID: {roomId}</span>
+            {isCopied ? (
+              <Check size={14} className="text-green-500" />
+            ) : (
+              <Copy size={14} className="text-gray-400 group-hover:text-gray-600" />
+            )}
+          </button>
         </div>
       )}
       <SyncedEditor roomId={roomId} />
