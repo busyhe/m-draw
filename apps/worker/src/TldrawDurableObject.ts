@@ -55,8 +55,6 @@ export class TldrawDurableObject implements DurableObject {
         const url = new URL(request.url)
         const roomId = url.searchParams.get('_roomId') || this.state.id.toString()
 
-        console.log(`Connecting to room ${roomId} session ${sessionId}`)
-
         // Recover room state from R2 if needed
         try {
           const sessions = this.room.getSessions()
@@ -65,40 +63,27 @@ export class TldrawDurableObject implements DurableObject {
             if (saved) {
               const snapshot = await saved.json()
               this.room.loadSnapshot(snapshot)
-              console.log(`Recovered snapshot for room ${this.state.id.toString()}`)
-            } else {
-              console.log('No saved room state found in R2')
             }
           }
         } catch (e) {
-          console.error(`Failed to recover room state:`, e)
+          console.error('Failed to recover room state:', e)
         }
 
         server.accept()
-        console.log('WebSocket accepted, handling connection...')
 
         // Notify stats on connect
         await this.notifyStats('connect', roomId)
 
         // Handle disconnect
-        server.addEventListener('close', async (evt) => {
-          console.log('DEBUG: Socket closed', evt.code, evt.reason)
+        server.addEventListener('close', async () => {
           await this.notifyStats('disconnect', roomId)
         })
-        server.addEventListener('error', async (err) => {
-          console.error('DEBUG: Socket error:', err)
+        server.addEventListener('error', async () => {
           await this.notifyStats('disconnect', roomId)
         })
 
-        // DEBUG: Monitor socket events to diagnose TLSocketRoom behavior
-        server.addEventListener('message', (event) => {
-          console.log('DEBUG: Socket received message size:', (event.data as string | ArrayBuffer).toString().length)
-        })
-
-        // this.room.handleSocketConnect({ sessionId, socket: socketProxy })
         try {
           this.room.handleSocketConnect({ sessionId, socket: server })
-          console.log('Connection handled by TLSocketRoom')
         } catch (e) {
           console.error('TLSocketRoom handleSocketConnect error:', e)
           await this.notifyStats('disconnect', roomId)

@@ -14,15 +14,15 @@
   },
   "dependencies": {
     "@next/third-parties": "catalog:",
-    "@tldraw/sync": "^4.2.3",
-    "@tldraw/sync-core": "^4.2.3",
+    "@tldraw/sync": "catalog:",
+    "@tldraw/sync-core": "catalog:",
     "@workspace/ui": "workspace:*",
     "lucide-react": "catalog:",
     "next": "catalog:",
     "next-themes": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "tldraw": "^4.2.3"
+    "tldraw": "catalog:"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "catalog:",

@@ -35,6 +35,8 @@
     }
   },
   "globalEnv": [
-    "NEXT_PUBLIC_GA_ID"
+    "NEXT_PUBLIC_GA_ID",
+    "NEXT_PUBLIC_WORKER_URL",
+    "NEXT_PUBLIC_TLDRAW_LICENSE_KEY"
   ]
 }

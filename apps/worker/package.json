@@ -8,11 +8,11 @@
     "deploy": "wrangler deploy --minify"
   },
   "dependencies": {
-    "@tldraw/sync-core": "4.2.3",
+    "@tldraw/sync-core": "catalog:",
     "itty-router": "^5.0.18"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20241230.0",
-    "wrangler": "^4.58.0"
+    "@cloudflare/workers-types": "catalog:",
+    "wrangler": "catalog:"
   }
 }

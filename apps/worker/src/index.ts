@@ -2,14 +2,20 @@ import { AutoRouter, cors, IRequest } from 'itty-router'
 import { Env, TldrawDurableObject } from './TldrawDurableObject.js'
 import { StatsDurableObject, StatsEnv } from './StatsDurableObject.js'
 
-// Allowed origins for CORS
-const ALLOWED_ORIGINS = [
-  'https://m-draw-web.vercel.app',
-  'http://draw.busyhe.com' // for local development
-]
+// Allowed origins for CORS (production)
+const ALLOWED_ORIGINS = ['https://m-draw-web.vercel.app', 'https://draw.busyhe.com']
+
+const isAllowedOrigin = (origin: string | undefined): string => {
+  if (!origin) return ''
+  // Check exact match
+  if (ALLOWED_ORIGINS.includes(origin)) return origin
+  // Allow any localhost port for development
+  if (origin.startsWith('http://localhost:')) return origin
+  return ''
+}
 
 const { preflight, corsify } = cors({
-  origin: (origin: string) => (ALLOWED_ORIGINS.includes(origin) ? origin : ''),
+  origin: isAllowedOrigin,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   headers: ['Content-Type', 'Authorization'],
   credentials: true
@@ -45,12 +51,14 @@ router.get('/assets/:id', async (request, env) => {
   if (!object) return new Response('Object Not Found', { status: 404 })
 
   const origin = request.headers.get('Origin') || ''
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ''
+  const allowedOrigin = isAllowedOrigin(origin)
 
   const headers = new Headers()
   object.writeHttpMetadata(headers)
-  headers.set('Access-Control-Allow-Origin', allowedOrigin)
-  headers.set('Access-Control-Allow-Credentials', 'true')
+  if (allowedOrigin) {
+    headers.set('Access-Control-Allow-Origin', allowedOrigin)
+    headers.set('Access-Control-Allow-Credentials', 'true')
+  }
   headers.set('etag', object.httpEtag)
 
   return new Response(object.body, { headers })
@@ -60,7 +68,7 @@ router.post('/assets/:id', async (request, env) => {
   await env.R2_BUCKET.put(`assets/${request.params.id}`, request.body, {
     httpMetadata: { contentType: request.headers.get('Content-Type') || 'application/octet-stream' }
   })
-  return corsify(new Response('OK'))
+  return corsify(new Response('OK'), request)
 })
 
 // Stats endpoints
@@ -81,19 +89,17 @@ export default {
     try {
       const response = await router.fetch(request, env, ctx)
 
-      // If it's a WebSocket upgrade, return it directly to preserve the webSocket property.
-      // Cloning the response via new Response() loses the webSocket attachment.
+      // Return WebSocket upgrade directly to preserve the webSocket property
       if (response.status === 101 || response.webSocket) {
-        console.log('Returning WebSocket Response (101)')
         return response
       }
 
       // Re-create response to ensure headers are mutable for CORS
       const mutableResponse = new Response(response.body, response)
-      return corsify(mutableResponse)
+      return corsify(mutableResponse, request)
     } catch (error) {
       console.error('Global Worker Error:', error)
-      return corsify(new Response(error instanceof Error ? error.message : 'Unknown Error', { status: 500 }))
+      return corsify(new Response(error instanceof Error ? error.message : 'Unknown Error', { status: 500 }), request)
     }
   }
 }
