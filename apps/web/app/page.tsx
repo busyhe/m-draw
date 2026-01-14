@@ -79,8 +79,8 @@ export default function HomePage() {
     <div data-wrapper="" className="border-grid flex flex-1 flex-col min-h-svh">
       <SiteHeader />
       <main className="flex flex-1 flex-col bg-landing-bg">
-        <div className="container-wrapper">
-          <div className="container py-8 md:py-12">
+        <div className="container-wrapper flex flex-1">
+          <div className="flex flex-1 flex-col container py-8 md:py-12">
             {/* Hero Section */}
             <section className="relative">
               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
@@ -101,7 +101,8 @@ export default function HomePage() {
                   </div>
                   <div className="text-sm">
                     <span className="font-semibold">
-                      +{totalUsers !== null ? totalUsers.toLocaleString() : '200,000'}
+                      {/* +{totalUsers !== null ? totalUsers.toLocaleString() : '200,000'} */}
+                      +200,000
                     </span>
                     <br />
                     {t('artistsRecommend')}
@@ -111,7 +112,7 @@ export default function HomePage() {
             </section>
 
             {/* Decorative Curves */}
-            <section className="my-4 md:my-8">
+            <section className="my-4 md:my-8 flex flex-1 items-center justify-center">
               <DecorativeCurves />
             </section>
 
