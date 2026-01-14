@@ -16,11 +16,14 @@ function SyncedEditor({ roomId }: { roomId: string }) {
       assets: {
         upload: async (_asset: TLAsset, file: File) => {
           const id = crypto.randomUUID()
-          await fetch(`${WORKER_URL}/assets/${id}`, {
+          const response = await fetch(`${WORKER_URL}/assets/${id}`, {
             method: 'POST',
             body: file,
             headers: { 'Content-Type': file.type }
           })
+          if (!response.ok) {
+            throw new Error(`Failed to upload asset: ${response.statusText}`)
+          }
           return { src: `${WORKER_URL}/assets/${id}` }
         },
         resolve: (asset: TLAsset) => ('src' in asset.props ? asset.props.src : null) ?? ''
