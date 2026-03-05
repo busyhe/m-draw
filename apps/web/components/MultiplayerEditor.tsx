@@ -39,7 +39,7 @@ function ConfirmDialog({
     <dialog
       ref={dialogRef}
       onClose={onCancel}
-      className="fixed inset-0 z-[9999] m-auto w-80 rounded-xl bg-white p-6 shadow-xl backdrop:bg-black/40 backdrop:backdrop-blur-sm"
+      className="fixed inset-0 z-9999 m-auto w-80 rounded-xl bg-white p-6 shadow-xl backdrop:bg-black/40 backdrop:backdrop-blur-sm"
     >
       <h3 className="text-base font-semibold text-gray-900">{title}</h3>
       <p className="mt-2 text-sm text-gray-500">{description}</p>
@@ -117,26 +117,30 @@ export function MultiplayerEditor({ roomId }: { roomId: string }) {
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
       {roomUsers !== null && (
-        <div className="absolute top-2 right-2 md:right-auto md:left-1/2 md:-translate-x-1/2 z-[1000] flex items-center gap-3 bg-white/90 backdrop-blur-md px-1.5 py-1 rounded-full shadow-sm border border-gray-200/50 hover:shadow-md transition-all">
+        <div className="absolute top-1 right-2 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 z-[1000] flex items-center gap-1 sm:gap-3 bg-white/90 backdrop-blur-md px-1 sm:px-1.5 py-1 rounded-full shadow-sm border border-gray-200/50 hover:shadow-md transition-all">
           <button
             onClick={() => setShowLeaveDialog(true)}
-            className="flex items-center justify-center w-8 h-8 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900 cursor-pointer"
+            className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900 cursor-pointer"
             title="Back to Home"
           >
-            <Home size={16} />
+            <Home size={14} className="sm:hidden" />
+            <Home size={16} className="hidden sm:block" />
           </button>
           <div className="w-px h-3 bg-gray-200" />
-          <div className="flex items-center gap-2 px-1">
-            <Users size={14} className="text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">{roomUsers}</span>
+          <div className="flex items-center gap-1 sm:gap-2 px-1">
+            <Users size={12} className="text-gray-500 sm:hidden" />
+            <Users size={14} className="text-gray-500 hidden sm:block" />
+            <span className="text-xs sm:text-sm font-medium text-gray-700">{roomUsers}</span>
           </div>
           <div className="w-px h-3 bg-gray-200" />
           <button
             onClick={handleCopy}
-            className="flex items-center gap-2 hover:bg-gray-100 p-1.5 -my-1 rounded-full transition-colors group cursor-pointer"
+            className="flex items-center gap-1 sm:gap-2 hover:bg-gray-100 p-1 sm:p-1.5 -my-1 rounded-full transition-colors group cursor-pointer"
             title="Copy Room ID"
           >
-            <span className="text-xs text-gray-400 font-mono max-w-[100px] truncate">ID: {roomId}</span>
+            <span className="hidden sm:inline text-xs text-gray-400 font-mono max-w-[100px] truncate">
+              ID: {roomId}
+            </span>
             {isCopied ? (
               <Check size={14} className="text-green-500" />
             ) : (
