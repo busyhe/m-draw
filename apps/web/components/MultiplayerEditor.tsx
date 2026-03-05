@@ -3,11 +3,63 @@
 import { Tldraw, TLAsset } from 'tldraw'
 import { useSync } from '@tldraw/sync'
 import 'tldraw/tldraw.css'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { Users, Copy, Check, Home } from 'lucide-react'
 import { WORKER_URL, TLDRAW_LICENSE_KEY } from '@/lib/constants'
 import { useRoomUsers } from '@/hooks'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+
+// Confirm dialog component using native <dialog> element
+function ConfirmDialog({
+  open,
+  title,
+  description,
+  onConfirm,
+  onCancel
+}: {
+  open: boolean
+  title: string
+  description: string
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+    if (open && !dialog.open) {
+      dialog.showModal()
+    } else if (!open && dialog.open) {
+      dialog.close()
+    }
+  }, [open])
+
+  return (
+    <dialog
+      ref={dialogRef}
+      onClose={onCancel}
+      className="fixed inset-0 z-[9999] m-auto w-80 rounded-xl bg-white p-6 shadow-xl backdrop:bg-black/40 backdrop:backdrop-blur-sm"
+    >
+      <h3 className="text-base font-semibold text-gray-900">{title}</h3>
+      <p className="mt-2 text-sm text-gray-500">{description}</p>
+      <div className="mt-5 flex justify-end gap-2">
+        <button
+          onClick={onCancel}
+          className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onConfirm}
+          className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors cursor-pointer"
+        >
+          Confirm
+        </button>
+      </div>
+    </dialog>
+  )
+}
 
 function SyncedEditor({ roomId }: { roomId: string }) {
   const syncConfig = useMemo(
@@ -40,7 +92,9 @@ function SyncedEditor({ roomId }: { roomId: string }) {
 export function MultiplayerEditor({ roomId }: { roomId: string }) {
   const [isMounted, setIsMounted] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false)
   const roomUsers = useRoomUsers(roomId, { enabled: isMounted })
+  const router = useRouter()
 
   useEffect(() => {
     setIsMounted(true)
@@ -52,6 +106,10 @@ export function MultiplayerEditor({ roomId }: { roomId: string }) {
     setTimeout(() => setIsCopied(false), 2000)
   }
 
+  const handleConfirmLeave = useCallback(() => {
+    router.push('/')
+  }, [router])
+
   if (!isMounted) {
     return <div style={{ position: 'fixed', inset: 0 }} />
   }
@@ -60,13 +118,13 @@ export function MultiplayerEditor({ roomId }: { roomId: string }) {
     <div style={{ position: 'fixed', inset: 0 }}>
       {roomUsers !== null && (
         <div className="absolute top-2 right-2 md:right-auto md:left-1/2 md:-translate-x-1/2 z-[1000] flex items-center gap-3 bg-white/90 backdrop-blur-md px-1.5 py-1 rounded-full shadow-sm border border-gray-200/50 hover:shadow-md transition-all">
-          <Link
-            href="/"
-            className="flex items-center justify-center w-8 h-8 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900"
+          <button
+            onClick={() => setShowLeaveDialog(true)}
+            className="flex items-center justify-center w-8 h-8 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900 cursor-pointer"
             title="Back to Home"
           >
             <Home size={16} />
-          </Link>
+          </button>
           <div className="w-px h-3 bg-gray-200" />
           <div className="flex items-center gap-2 px-1">
             <Users size={14} className="text-gray-500" />
@@ -87,6 +145,13 @@ export function MultiplayerEditor({ roomId }: { roomId: string }) {
           </button>
         </div>
       )}
+      <ConfirmDialog
+        open={showLeaveDialog}
+        title="Leave Room"
+        description="Are you sure you want to leave this room and go back to the home page?"
+        onConfirm={handleConfirmLeave}
+        onCancel={() => setShowLeaveDialog(false)}
+      />
       <SyncedEditor roomId={roomId} />
     </div>
   )
