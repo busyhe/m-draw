@@ -1,4 +1,4 @@
-import { TLSocketRoom } from '@tldraw/sync-core'
+import { TLSocketRoom, type RoomSnapshot } from '@tldraw/sync-core'
 
 export interface Env {
   R2_BUCKET: R2Bucket
@@ -7,22 +7,68 @@ export interface Env {
 }
 
 export class TldrawDurableObject implements DurableObject {
-  private room: TLSocketRoom
+  private room!: TLSocketRoom
+  private snapshotDirty = false
+  private savingSnapshot = false
 
   constructor(
     private readonly state: DurableObjectState,
     private readonly env: Env
   ) {
-    this.room = new TLSocketRoom({
-      maxConnections: 100,
-      log: {
-        warn: (...args) => console.warn('TLSocketRoom Warn:', ...args),
-        error: (...args) => console.error('TLSocketRoom Error:', ...args)
-      },
-      onSave: async (snapshot) => {
-        await this.env.R2_BUCKET.put(`rooms/${this.state.id.toString()}`, JSON.stringify(snapshot))
-      }
+    // Recover once per object instance, before accepting any socket. Never
+    // open an empty room if reading its existing snapshot failed.
+    this.state.blockConcurrencyWhile(async () => {
+      const saved = await this.env.R2_BUCKET.get(this.snapshotKey)
+      const initialSnapshot = saved ? await saved.json<RoomSnapshot>() : undefined
+
+      this.room = new TLSocketRoom({
+        initialSnapshot,
+        log: {
+          warn: (...args) => console.warn('TLSocketRoom Warn:', ...args),
+          error: (...args) => console.error('TLSocketRoom Error:', ...args)
+        },
+        onDataChange: () => this.scheduleSnapshotSave()
+      })
+      // tldraw can report a migration during construction, when room isn't assigned yet.
+      if (this.snapshotDirty) this.scheduleSnapshotSave()
     })
+  }
+
+  private get snapshotKey() {
+    return `rooms/${this.state.id.toString()}`
+  }
+
+  private scheduleSnapshotSave() {
+    this.snapshotDirty = true
+    if (!this.room || this.savingSnapshot) return
+
+    this.savingSnapshot = true
+    this.state.waitUntil(this.flushSnapshots())
+  }
+
+  private async flushSnapshots() {
+    try {
+      // Serialize writes so a slow older snapshot cannot replace a newer one.
+      // Edits while a write is in flight are coalesced into the next snapshot.
+      while (this.snapshotDirty) {
+        this.snapshotDirty = false
+        const snapshot = JSON.stringify(this.room.getCurrentSnapshot())
+        for (let attempt = 0; ; attempt++) {
+          try {
+            await this.env.R2_BUCKET.put(this.snapshotKey, snapshot)
+            break
+          } catch (error) {
+            if (attempt === 2) throw error
+            await new Promise((resolve) => setTimeout(resolve, 100 * 2 ** attempt))
+          }
+        }
+      }
+    } catch (error) {
+      this.snapshotDirty = true
+      console.error('Failed to save room snapshot:', this.state.id.toString(), error)
+    } finally {
+      this.savingSnapshot = false
+    }
   }
 
   private async notifyStats(action: 'connect' | 'disconnect', roomId: string) {
@@ -54,20 +100,6 @@ export class TldrawDurableObject implements DurableObject {
 
         const url = new URL(request.url)
         const roomId = url.searchParams.get('_roomId') || this.state.id.toString()
-
-        // Recover room state from R2 if needed
-        try {
-          const sessions = this.room.getSessions()
-          if (sessions.length === 0) {
-            const saved = await this.env.R2_BUCKET.get(`rooms/${this.state.id.toString()}`)
-            if (saved) {
-              const snapshot = await saved.json()
-              this.room.loadSnapshot(snapshot)
-            }
-          }
-        } catch (e) {
-          console.error('Failed to recover room state:', e)
-        }
 
         server.accept()
 
